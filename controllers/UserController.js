@@ -2,7 +2,8 @@ const { PrismaClient } = require('@prisma/client');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-
+// const sendVerificationMail = require('../lib/sendverificationcode');
+const { sendVerificationMail } = require('../lib/sendverificationcode');
 const prisma = new PrismaClient();
 
 // Register user
@@ -33,42 +34,77 @@ exports.registerUser = async (req, res) => {
    }
 };
 
-// Login user
+
+// Login user with verification code
 exports.loginUser = async (req, res, next) => {
-   const { email, password } = req.body;
+    const { email, password } = req.body;
 
-   console.log("email is:", email);
-   console.log("and password is:", password);
+    if (!email || !password) {
+        return res.status(400).json({
+            success: false,
+            message: "Please provide an email and password"
+        });
+    }
 
-   if (!email || !password) {
-       return res.status(400).json({
-           success: false,
-           message: "Please provide an email and password"
-       });
-   }
+    try {
+        const user = await prisma.user.findUnique({ where: { email } });
 
-   try {
-       const user = await prisma.user.findUnique({
-           where: { email }
-       });
+        if (!user) {
+            return res.status(401).json({ success: false, message: "Invalid credentials, user not found" });
+        }
 
-       if (!user) {
-           return res.status(401).json({ success: false, message: "Invalid credentials, this user isn't found" });
-       }
+        const isMatch = await bcrypt.compare(password, user.password);
 
-       const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, message: "Invalid credentials, password does not match" });
+        }
 
-       if (!isMatch) {
-           return res.status(401).json({ success: false, message: "Invalid credentials, the password does not match" });
-       }
+        // Generate a 6-digit verification code
+        const verificationCode = crypto.randomInt(100000, 999999).toString();
 
-       const token = jwt.sign({ id: user.id }, process.env.TOKEN_KEY, { expiresIn: "1d" });
+        // Store the code temporarily (in DB or cache, here using Prisma)
+        await prisma.user.update({
+            where: { email },
+            data: { verificationCode,
+               verificationCodeExpire: new Date(Date.now() + 10 * 60 * 1000) // Expires in 10 mins
+             }
+        });
 
-       res.status(200).json({ success: true, token, user });
+        // Send the verification code via email
+        await sendVerificationMail(email, verificationCode);
 
-   } catch (error) {
-       next(error);
-   }
+        res.status(200).json({
+            success: true,
+            message: "Verification code sent to your email. Please verify to continue."
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Verify the code and log the user in
+exports.verifyCode = async (req, res, next) => {
+    const { email, verificationCode } = req.body;
+
+    try {
+        const user = await prisma.user.findUnique({ where: { email } });
+
+        if (!user || user.verificationCode !== verificationCode) {
+            return res.status(401).json({ success: false, message: "Invalid or expired verification code" });
+        }
+
+        // Clear the verification code after successful verification
+        await prisma.user.update({
+            where: { email },
+            data: { verificationCode: null }
+        });
+
+        const token = jwt.sign({ id: user.id }, process.env.TOKEN_KEY, { expiresIn: "1d" });
+
+        res.status(200).json({ success: true, token, user });
+    } catch (error) {
+        next(error);
+    }
 };
 
 // Get current user
