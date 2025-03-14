@@ -3,6 +3,10 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
+const compression = require("compression");
+const cors = require("cors");
 
 const PORT = process.env.PORT || 3000;
 
@@ -10,11 +14,45 @@ var AuthRoute = require('./routes/UserRoute');
 
 var app = express();
 
+
+app.set("trust proxy", 1); // Trust the first proxy
+
+
+const allowedOrigins = ["http://localhost:5173", "http://localhost:3000"];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // Enable if your app requires cookies
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+//performance Middleware
+app.use(helmet());
+app.use(compression());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+});
+app.use(limiter);
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+
 
 // Routes connection
 app.use('/api', AuthRoute);
