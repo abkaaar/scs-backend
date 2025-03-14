@@ -11,6 +11,7 @@ const cors = require("cors");
 const PORT = process.env.PORT || 3000;
 
 var AuthRoute = require('./routes/UserRoute');
+var DepartmentRoute = require('./routes/DepartmentRoute');
 
 var app = express();
 
@@ -56,6 +57,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes connection
 app.use('/api', AuthRoute);
+app.use('/api', DepartmentRoute);
 
 // Catch 404 and forward to error handler
 app.use(function(req, res, next) {
