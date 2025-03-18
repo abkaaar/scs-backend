@@ -19,7 +19,7 @@ var app = express();
 app.set("trust proxy", 1); // Trust the first proxy
 
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:5173", "http://localhost:3039"];
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -57,7 +57,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes connection
 app.use('/api', AuthRoute);
-app.use('/api', DepartmentRoute);
+app.use('/api/department', DepartmentRoute);
 
 // Catch 404 and forward to error handler
 app.use(function(req, res, next) {
