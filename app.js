@@ -23,12 +23,11 @@ const allowedOrigins = ["*"];
 app.use(
   cors({
     origin: function (origin, callback) {
-      callback(null, origin || "*"); // Allow any origin
-      // if (!origin || allowedOrigins.some((allowedOrigin) => origin.startsWith(allowedOrigin))) {
-      //   callback(null, true);
-      // } else {
-      //   callback(new Error("Not allowed by CORS"));
-      // }
+      if (!origin || allowedOrigins.some((allowedOrigin) => origin.startsWith(allowedOrigin))) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
     },
     credentials: true, // Enable if your app requires cookies
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -36,7 +35,7 @@ app.use(
   })
 );
 
-app.options("*", cors());
+// app.options("*", cors());
 
 
 //performance Middleware
