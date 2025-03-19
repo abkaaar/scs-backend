@@ -25,6 +25,9 @@ model User {
   resetPasswordToken     String?
   resetPasswordExpire    DateTime?
   createdAt              DateTime  @default(now())
+
+  departmentId  String?   // Foreign key for Department
+  department    Department? @relation(fields: [departmentId], references: [id])
 }
 
 model Department {
@@ -32,4 +35,6 @@ model Department {
   name        String
   description String?
   createdAt   DateTime @default(now())
+
+   users       User[]   // One department can have multiple users
 }

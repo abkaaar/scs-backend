@@ -19,15 +19,16 @@ var app = express();
 app.set("trust proxy", 1); // Trust the first proxy
 
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:5173", "http://localhost:3039"];
+const allowedOrigins = ["*"];
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
+      callback(null, origin || "*"); // Allow any origin
+      // if (!origin || allowedOrigins.some((allowedOrigin) => origin.startsWith(allowedOrigin))) {
+      //   callback(null, true);
+      // } else {
+      //   callback(new Error("Not allowed by CORS"));
+      // }
     },
     credentials: true, // Enable if your app requires cookies
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
