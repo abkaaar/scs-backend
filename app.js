@@ -18,12 +18,11 @@ var app = express();
 
 app.set("trust proxy", 1); // Trust the first proxy
 
-
-const allowedOrigins = ["http://localhost:3039", "http://localhost:3000"];
+const allowedOrigins = ["http://localhost:3039", "http://localhost:5173", "http://localhost:3000"];
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.some((allowedOrigin) => origin.startsWith(allowedOrigin))) {
+      if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
@@ -34,7 +33,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
 
 
 //performance Middleware
@@ -54,7 +52,17 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-
+// Optional logging middleware to verify headers
+app.use((req, res, next) => {
+  res.on("finish", () => {
+    console.log(`Request Origin: ${req.headers.origin}`);
+    console.log(
+      "Access-Control-Allow-Origin:",
+      res.get("Access-Control-Allow-Origin")
+    );
+  });
+  next();
+});
 
 
 // Routes connection
