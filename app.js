@@ -35,7 +35,6 @@ app.use(
   })
 );
 
-// app.options("*", cors());
 
 
 //performance Middleware
