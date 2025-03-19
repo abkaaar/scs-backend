@@ -19,7 +19,7 @@ var app = express();
 app.set("trust proxy", 1); // Trust the first proxy
 
 
-const allowedOrigins = ["*"];
+const allowedOrigins = ["http://localhost:3039", "http://localhost:3000"];
 app.use(
   cors({
     origin: function (origin, callback) {
