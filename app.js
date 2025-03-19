@@ -36,6 +36,9 @@ app.use(
   })
 );
 
+app.options("*", cors());
+
+
 //performance Middleware
 app.use(helmet());
 app.use(compression());
