@@ -19,30 +19,31 @@ var app = express();
 app.set("trust proxy", 1); // Trust the first proxy
 
 
-app.use(
-  cors({
-    origin: ["http://localhost:3039", "http://localhost:3000"], // Replace with your deployed frontend
-    credentials: true, // Allows cookies and auth headers
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-// const allowedOrigins = ["http://localhost:3039", "http://localhost:5173", "http://localhost:3000"];
 // app.use(
 //   cors({
-//     origin: function (origin, callback) {
-//       if (!origin || allowedOrigins.includes(origin)) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error("Not allowed by CORS"));
-//       }
-//     },
-//     credentials: true, // Enable if your app requires cookies
-//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     origin: ["http://localhost:3039", "http://localhost:3000"], // Replace with your deployed frontend
+//     credentials: true, // Allows cookies and auth headers
+//     methods: ["GET", "POST", "PUT", "DELETE"],
 //     allowedHeaders: ["Content-Type", "Authorization"],
 //   })
 // );
+
+const allowedOrigins = ["http://localhost:3039", "http://localhost:5173", "http://localhost:3000"];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // Enable if your app requires cookies
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    preflightContinue: false,
+  })
+);
 
 
 
