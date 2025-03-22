@@ -18,11 +18,12 @@ var app = express();
 
 app.set("trust proxy", 1); // Trust the first proxy
 
+
 app.use(
   cors({
-    origin: ["http://localhost:3039"], // Add your frontend URLs
-    credentials: true, // Allows sending cookies
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    origin: ["http://localhost:3039", "http://localhost:3000"], // Replace with your deployed frontend
+    credentials: true, // Allows cookies and auth headers
+    methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
@@ -43,17 +44,7 @@ app.use(
 //   })
 // );
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*"); // Allow any origin (for testing)
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
 
 //performance Middleware
 app.use(helmet());
